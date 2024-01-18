@@ -5,9 +5,13 @@ const io = new Server();
 const user = {};
 io.listen(3001);
 io.on("connection", (socket) => {
-    socket.on("join", (userId) => {
-        if (!userId) return;
-        user[userId] = socket.id;
+    socket.on("join", ({ uuid, username }) => {
+        if (!uuid) return;
+        user[uuid] = {
+            id: socket.id,
+            username
+        };
+
     });
     socket.on("private-chat", ({ data, reciverId, senderId }) => {
 
@@ -15,10 +19,12 @@ io.on("connection", (socket) => {
             data,
             time: Date.now(),
             senderId,
+            reciverId,
+            username: user[senderId].username,
         }
-
-        socket.to(user[reciverId]).emit('private-chat', messsgae)
         
+        socket.to(user[reciverId].id).emit('private-chat', messsgae)
+
     });
 });
 module.exports = router;

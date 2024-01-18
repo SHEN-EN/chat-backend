@@ -11,7 +11,7 @@ const jwt = require('jwt-simple')
 const static = require('koa-static')
 
 const { addAliases } = require("module-alias");
-const { log } = require('console');
+
 addAliases({
     '@': __dirname
 })
@@ -39,44 +39,44 @@ app.use(async (ctx, next) => {
 
 // *******************JWT********************
 // Custom 401 handling if you don't want to expose koa-jwt errors to users
-app.use((ctx, next) => {
+// app.use((ctx, next) => {
 
-    if (ctx.header && ctx.header.authorization) {
-        try {
-            const decoded = jwt.decode(ctx.header.authorization, tokenConfig.jwtSecret)
-            const timeStamp = Date.now()
-            if (timeStamp > decoded.expires) {
-                ctx.body = {
-                    code: 401,
-                    msg: `Token已过期`
-                }
-                return
-            }
-        } catch (error) {
-            ctx.status = 401;
-            ctx.body = {
-                code: 401,
-                msg: `非法Token${error}`
-            }
-            return
-        }
-    }
-    return next().catch((err) => {
-        if (401 == err.status) {
-            ctx.status = 401;
-            ctx.body = {
-                code: 401,
-                msg: 'Protected resource, use Authorization header to get access'
-            };
-        } else {
-            throw err;
-        }
-    });
-});
+//     if (ctx.header && ctx.header.authorization) {
+//         try {
+//             const decoded = jwt.decode(ctx.header.authorization, tokenConfig.jwtSecret)
+//             const timeStamp = Date.now()
+//             if (timeStamp > decoded.expires) {
+//                 ctx.body = {
+//                     code: 401,
+//                     msg: `Token已过期`
+//                 }
+//                 return
+//             }
+//         } catch (error) {
+//             ctx.status = 401;
+//             ctx.body = {
+//                 code: 401,
+//                 msg: `非法Token${error}`
+//             }
+//             return
+//         }
+//     }
+//     return next().catch((err) => {
+//         if (401 == err.status) {
+//             ctx.status = 401;
+//             ctx.body = {
+//                 code: 401,
+//                 msg: 'Protected resource, use Authorization header to get access'
+//             };
+//         } else {
+//             throw err;
+//         }
+//     });
+// });
 
-app.use(koaJwt({ secret: tokenConfig.jwtSecret }).unless({
-    path: tokenConfig.whilePath
-}))
+// app.use(koaJwt({ secret: tokenConfig.jwtSecret }).unless({
+//     path: tokenConfig.whilePath
+// }))
 
 
 // *******************JWT********************
