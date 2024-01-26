@@ -1,5 +1,6 @@
 const Router = require('koa-router')
 const friendsModel = require('@/models/modules/friends')
+const userModel = require('@/models/modules/user')
 const router = new Router()
 const { isEmpty } = require('@/util/index')
 
@@ -42,9 +43,9 @@ router.get('/getList', async (ctx) => {
 
 // 搜索好友
 router.get('/searchFriends', async (ctx) => {
-    const { account } = ctx.query
+    const { account, uuid } = ctx.query
 
-    if (isEmpty({ account })) {
+    if (isEmpty({ account, uuid })) {
         ctx.body = {
             code: 400,
             msg: '参数错误'
@@ -56,23 +57,29 @@ router.get('/searchFriends', async (ctx) => {
 
     if (user.length < 1) {
         ctx.body = {
-            code: 400,
-            msg: '账号不存在'
+            code: 200,
+            msg: '搜索成功',
+            data: []
         }
         return
     }
 
-    const { uuid, username, avatar } = user[0]
+    const { username, avatar } = user[0]
+
+    // 判断搜索的用户是否和本人是好友
+
+    const userFriends = await isExitFriend(uuid) // 本人的朋友列表
 
     ctx.body = {
         code: 200,
         msg: '搜索成功',
-        data: {
-            uuid,
+        data: [{
+            uuid: user[0].uuid,
             username,
             avatar,
-            account
-        }
+            account,
+            isFriend: userFriends.map(({ friendUuid }) => friendUuid).includes(user[0].uuid)
+        }]
     }
 
 })
@@ -146,5 +153,5 @@ router.get('/getFriendDetail', async (ctx) => {
 })
 
 const exitUser = async (account) => await userModel.userLogin(account)
-
+const isExitFriend = async (uuid) => await friendsModel.friendExists(uuid)
 module.exports = router

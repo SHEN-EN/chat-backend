@@ -11,8 +11,13 @@ const friendGetDetail = (params) => {
     const SQL = `select * from tb_user where uuid = ?`
     return query(SQL, params)
 }
+const friendExists = (params) => {
+    const SQL = `select * from tb_user_friends where uuid = ?`
+    return query(SQL, params)
+}
 module.exports = {
     friendGetList,
     friendAddUser,
     friendGetDetail,
+    friendExists,
 }

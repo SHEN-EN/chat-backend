@@ -82,7 +82,7 @@ router.post('/login', async (ctx) => {
             data: {
                 uuid: user[0].uuid,
                 account,
-                username: user[0].username
+                username: user[0].username,
             }
         }
         return
