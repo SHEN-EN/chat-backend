@@ -7,7 +7,17 @@ const userLogin = (params) => {
     const SQL = `select * from tb_user where account = ?`
     return query(SQL, params)
 }
+const userEditInfo = (params) => {
+    const SQL = `update tb_user set username,avatar,description,sex,birthday values(?,?,?,?,?) where uuid=?`
+    return query(SQL, params)
+}
+const userGetInfo = (params) => {
+    const SQL = `select username,avatar,description,sex,birthday from tb_user where uuid=?`
+    return query(SQL, params)
+}
 module.exports = {
     userRegistry,
     userLogin,
+    userEditInfo,
+    userGetInfo,
 }

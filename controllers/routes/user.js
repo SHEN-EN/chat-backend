@@ -1,6 +1,7 @@
 const Router = require('koa-router')
 const router = new Router()
 const userModel = require('@/models/modules/user')
+const logger = require('@/logs/index')
 const { v4: uuidv4 } = require('uuid');
 const { isEmpty } = require('@/util/index')
 const { tokenExpiresTime, jwtSecret } = require('@/config/token')
@@ -46,8 +47,9 @@ router.post('/register', async (ctx) => {
     } catch (error) {
         ctx.body = {
             code: 500,
-            msg: error
+            msg: '服务器错误'
         }
+        logger.error('/register ---', error)
     }
 
 })
@@ -95,6 +97,66 @@ router.post('/login', async (ctx) => {
     }
 })
 
+router.put('/editUserInfo', async (ctx) => {
+    const { uuid, username, avatar, birthday, sex, dec } = ctx.request.body;
+
+    if (isEmpty({ uuid })) {
+        ctx.body = {
+            code: 400,
+            msg: '参数错误'
+        }
+        return
+    }
+
+    const user = await exitUser(account)
+
+    if (user.length < 0) {
+        ctx.body = {
+            code: 400,
+            msg: '用户不存在'
+        }
+        return
+    }
+    try {
+        await userModel.userEditInfo([username, avatar, dec, sex, birthday, uuid])
+
+        ctx.body = {
+            code: 200,
+            msg: '修改成功'
+        }
+
+    } catch (error) {
+
+        ctx.body = {
+            code: 500,
+            msg: '服务器错误'
+        }
+
+        logger.error('/editUserInfo ---', error)
+
+    }
+
+})
+
+router.get('/getUserInfo', async (ctx) => {
+    const { uuid } = ctx.request.query;
+
+    if (isEmpty({ uuid })) {
+        ctx.body = {
+            code: 400,
+            msg: '参数错误'
+        }
+        return
+    }
+
+    const data = await userModel.userGetInfo([uuid]);
+
+    ctx.body = {
+        code: 200,
+        msg: '查询成功',
+        data:data[0]
+    }
+})
 const exitUser = async (account) => await userModel.userLogin(account)
 const generateToken = (uuid) => {
     const payload = {

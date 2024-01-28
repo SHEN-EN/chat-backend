@@ -3,6 +3,7 @@ const friendsModel = require('@/models/modules/friends')
 const userModel = require('@/models/modules/user')
 const router = new Router()
 const { isEmpty } = require('@/util/index')
+const logger = require('@/logs/index')
 
 router.prefix('/v1/friends')
 // 获取好友列表
@@ -36,8 +37,9 @@ router.get('/getList', async (ctx) => {
     } catch (error) {
         ctx.body = {
             code: 500,
-            msg: error
+            msg: '服务器错误'
         }
+        logger.error('/getList ---', error)
     }
 })
 
@@ -105,8 +107,10 @@ router.post('/addFriends', async (ctx) => {
 
         ctx.body = {
             code: 500,
-            msg: error
+            msg: '服务器错误'
         }
+
+        logger.error('/addFriends ---', error)
 
     }
 })
@@ -146,8 +150,9 @@ router.get('/getFriendDetail', async (ctx) => {
     } catch (error) {
         ctx.body = {
             code: 500,
-            msg: error
+            msg: '服务器错误'
         }
+        logger.error('/getFriendDetail ---', error)
     }
 
 })
