@@ -6,11 +6,12 @@ const { isEmpty } = require('@/util/index')
 const logger = require('@/logs/index')
 
 router.prefix('/v1/friends')
+
 // 获取好友列表
 router.get('/getList', async (ctx) => {
-
-    const { uuid } = ctx.query
-    if (isEmpty({ uuid })) {
+    // uuid: 用户id status: 0 | 1 申请是否通过
+    const { uuid, status } = ctx.query
+    if (isEmpty({ uuid, status })) {
         ctx.body = {
             code: 400,
             msg: '参数错误'
@@ -19,7 +20,7 @@ router.get('/getList', async (ctx) => {
     }
 
     try {
-        const result = await friendsModel.friendGetList([uuid])
+        const result = await friendsModel.friendGetList([uuid, status])
 
         ctx.body = {
             code: 200,
@@ -70,7 +71,7 @@ router.get('/searchFriends', async (ctx) => {
 
     // 判断搜索的用户是否和本人是好友
 
-    const userFriends = await isExitFriend(uuid) // 本人的朋友列表
+    const userFriends = await isExitFriend(uuid, 1) // 本人的朋友列表
 
     ctx.body = {
         code: 200,
@@ -93,14 +94,25 @@ router.post('/addFriends', async (ctx) => {
         const senderUser = await exitUser(senderAccount); // 申请人信息 
         const reciveUser = await exitUser(reciveAccount); // 接收人信息
 
-        // 更新friends表 双向更新
-        await friendsModel.friendAddUser([senderAccount, senderUser[0].uuid, reciveAccount, reciveUser[0].uuid, reciveUser[0].avatar, reciveUser[0].username])
 
-        await friendsModel.friendAddUser([reciveAccount, reciveUser[0].uuid, senderAccount, senderUser[0].uuid, senderUser[0].avatar, senderUser[0].username])
+        const detail = await isExitFriend(reciveUser[0].uuid, 1) // 查询申请列表是否有申请人信息
+
+        if (detail.length) {
+            ctx.body = {
+                code: 200,
+                msg: '请勿重复申请'
+            }
+            return
+        }
+
+        // 更新friends表 双向更新
+        await friendsModel.friendAddUser([senderAccount, senderUser[0].uuid, reciveAccount, reciveUser[0].uuid, reciveUser[0].avatar, reciveUser[0].username, 0])
+
+        await friendsModel.friendAddUser([reciveAccount, reciveUser[0].uuid, senderAccount, senderUser[0].uuid, senderUser[0].avatar, senderUser[0].username, 0])
 
         ctx.body = {
             code: 200,
-            msg: '添加成功'
+            msg: '申请成功'
         }
 
     } catch (error) {
@@ -156,7 +168,36 @@ router.get('/getFriendDetail', async (ctx) => {
     }
 
 })
+// 获取我的好友申请列表
+router.get('/getApplyList', async (ctx) => {
+    const { uuid } = ctx.query;
 
+    if (isEmpty({ uuid })) {
+        ctx.body = {
+            code: 400,
+            msg: '参数错误'
+        }
+        return
+    }
+    try {
+        const userFriends = await friendsModel.friendList(uuid)
+
+        ctx.body = {
+            code: 200,
+            msg: '查询成功',
+            data: userFriends,
+        }
+    } catch (error) {
+
+        ctx.body = {
+            code: 500,
+            msg: '服务器错误'
+        }
+        logger.error('/getApplyList ---', error)
+    }
+
+
+})
 const exitUser = async (account) => await userModel.userLogin(account)
-const isExitFriend = async (uuid) => await friendsModel.friendExists(uuid)
+const isExitFriend = async (uuid, status) => await friendsModel.friendExists([uuid, status])
 module.exports = router

@@ -8,11 +8,11 @@ const userLogin = (params) => {
     return query(SQL, params)
 }
 const userEditInfo = (params) => {
-    const SQL = `update tb_user set username,avatar,description,sex,birthday values(?,?,?,?,?) where uuid=?`
+    const SQL = `update tb_user set username=?,avatar=?,description=?,sex=?,birthday=? where uuid=?`
     return query(SQL, params)
 }
 const userGetInfo = (params) => {
-    const SQL = `select username,avatar,description,sex,birthday from tb_user where uuid=?`
+    const SQL = `select username,avatar,description,sex,birthday,account from tb_user where uuid=?`
     return query(SQL, params)
 }
 module.exports = {

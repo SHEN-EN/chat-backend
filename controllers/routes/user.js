@@ -108,15 +108,6 @@ router.put('/editUserInfo', async (ctx) => {
         return
     }
 
-    const user = await exitUser(account)
-
-    if (user.length < 0) {
-        ctx.body = {
-            code: 400,
-            msg: '用户不存在'
-        }
-        return
-    }
     try {
         await userModel.userEditInfo([username, avatar, dec, sex, birthday, uuid])
 
@@ -154,7 +145,7 @@ router.get('/getUserInfo', async (ctx) => {
     ctx.body = {
         code: 200,
         msg: '查询成功',
-        data:data[0]
+        data: { ...data[0], uuid }
     }
 })
 const exitUser = async (account) => await userModel.userLogin(account)

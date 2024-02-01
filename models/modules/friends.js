@@ -1,10 +1,10 @@
 const query = require('../sql')
 const friendGetList = params => {
-    const SQL = `select * from tb_user_friends where uuid = ?`;
+    const SQL = `select * from tb_user_friends where uuid = ? and isAgree=?`;
     return query(SQL, params)
 }
 const friendAddUser = (params) => {
-    const SQL = `insert into tb_user_friends(account,uuid,friendAccount,frienduuid,friendAvatar,friendUsername) values(?,?,?,?,?,?)`
+    const SQL = `insert into tb_user_friends(account,uuid,friendAccount,frienduuid,friendAvatar,friendUsername,isAgree,time) values(?,?,?,?,?,?,?,NOW())`
     return query(SQL, params)
 }
 const friendGetDetail = (params) => {
@@ -12,6 +12,10 @@ const friendGetDetail = (params) => {
     return query(SQL, params)
 }
 const friendExists = (params) => {
+    const SQL = `select * from tb_user_friends where uuid = ? and isAgree=?`
+    return query(SQL, params)
+}
+const friendList = (params) => {
     const SQL = `select * from tb_user_friends where uuid = ?`
     return query(SQL, params)
 }
@@ -20,4 +24,5 @@ module.exports = {
     friendAddUser,
     friendGetDetail,
     friendExists,
+    friendList,
 }

@@ -22,9 +22,13 @@ io.on("connection", (socket) => {
             reciverId,
             username: user[senderId].username,
         }
-        
+
         socket.to(user[reciverId].id).emit('private-chat', messsgae)
 
     });
+    // 添加好友通知
+    socket.on('add-friends', ({ reciverId }) => {
+        socket.to(user[reciverId].id).emit('add-friends')
+    })
 });
 module.exports = router;
