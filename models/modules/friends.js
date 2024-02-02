@@ -19,10 +19,15 @@ const friendList = (params) => {
     const SQL = `select * from tb_user_friends where uuid = ?`
     return query(SQL, params)
 }
+const agreeApply = (params) => {
+    const SQL = `update tb_user_friends set isAgree='1' where uuid=? and frienduuid=?`
+    return query(SQL, params)
+}
 module.exports = {
     friendGetList,
     friendAddUser,
     friendGetDetail,
     friendExists,
     friendList,
+    agreeApply
 }

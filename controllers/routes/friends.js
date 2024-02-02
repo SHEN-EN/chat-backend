@@ -181,7 +181,6 @@ router.get('/getApplyList', async (ctx) => {
     }
     try {
         const userFriends = await friendsModel.friendList(uuid)
-
         ctx.body = {
             code: 200,
             msg: '查询成功',
@@ -197,6 +196,33 @@ router.get('/getApplyList', async (ctx) => {
     }
 
 
+})
+// 同意好友申请
+router.put('/agreeApply', async (ctx) => {
+    const { uuid, frienduuid } = ctx.request.body;
+
+    if (isEmpty({ uuid, frienduuid })) {
+        ctx.body = {
+            code: 400,
+            msg: '参数错误'
+        }
+        return
+    }
+    try {
+        await friendsModel.agreeApply([uuid, frienduuid])
+        ctx.body = {
+            code: 200,
+            msg: '操作成功'
+        }
+    } catch (error) {
+
+        ctx.body = {
+            code: 500,
+            msg: '服务器错误'
+        }
+
+        logger.error('/agreeApply ---', error)
+    }
 })
 const exitUser = async (account) => await userModel.userLogin(account)
 const isExitFriend = async (uuid, status) => await friendsModel.friendExists([uuid, status])
