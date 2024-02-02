@@ -36,7 +36,7 @@ router.post('/register', async (ctx) => {
 
         ctx.body = {
             code: 200,
-            token: generateToken(uuid),
+            token: generateToken({ uuid, account }),
             msg: '注册成功',
             data: {
                 uuid,
@@ -80,7 +80,7 @@ router.post('/login', async (ctx) => {
         ctx.body = {
             code: 200,
             msg: '登录成功',
-            token: generateToken(user[0].uuid),
+            token: generateToken({ uuid: user[0].uuid, account }),
             data: {
                 uuid: user[0].uuid,
                 account,
@@ -98,18 +98,12 @@ router.post('/login', async (ctx) => {
 })
 
 router.put('/editUserInfo', async (ctx) => {
-    const { uuid, username, avatar, birthday, sex, dec } = ctx.request.body;
+    const { username, avatar, birthday, sex, dec } = ctx.request.body;
 
-    if (isEmpty({ uuid })) {
-        ctx.body = {
-            code: 400,
-            msg: '参数错误'
-        }
-        return
-    }
+    const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
 
     try {
-        await userModel.userEditInfo([username, avatar, dec, sex, birthday, uuid])
+        await userModel.userEditInfo([username, avatar, dec, sex, birthday, payload.uuid])
 
         ctx.body = {
             code: 200,
@@ -130,29 +124,21 @@ router.put('/editUserInfo', async (ctx) => {
 })
 
 router.get('/getUserInfo', async (ctx) => {
-    const { uuid } = ctx.request.query;
-
-    if (isEmpty({ uuid })) {
-        ctx.body = {
-            code: 400,
-            msg: '参数错误'
-        }
-        return
-    }
-
-    const data = await userModel.userGetInfo([uuid]);
+    const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
+    const data = await userModel.userGetInfo([payload.uuid]);
 
     ctx.body = {
         code: 200,
         msg: '查询成功',
-        data: { ...data[0], uuid }
+        data: { ...data[0], uuid: payload.uuid }
     }
 })
 const exitUser = async (account) => await userModel.userLogin(account)
-const generateToken = (uuid) => {
+const generateToken = ({ uuid, account }) => {
     const payload = {
         expires: Date.now() + tokenExpiresTime,
-        uuid
+        uuid,
+        account
     }
     return jwt.encode(payload, jwtSecret)
 }

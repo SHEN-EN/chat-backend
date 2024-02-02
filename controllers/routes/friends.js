@@ -4,14 +4,17 @@ const userModel = require('@/models/modules/user')
 const router = new Router()
 const { isEmpty } = require('@/util/index')
 const logger = require('@/logs/index')
-
+const jwt = require('jwt-simple')
+const { jwtSecret } = require('@/config/token')
 router.prefix('/v1/friends')
 
 // 获取好友列表
 router.get('/getList', async (ctx) => {
     // uuid: 用户id status: 0 | 1 申请是否通过
-    const { uuid, status } = ctx.query
-    if (isEmpty({ uuid, status })) {
+    const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
+
+    const { status } = ctx.query
+    if (isEmpty({ status })) {
         ctx.body = {
             code: 400,
             msg: '参数错误'
@@ -20,7 +23,7 @@ router.get('/getList', async (ctx) => {
     }
 
     try {
-        const result = await friendsModel.friendGetList([uuid, status])
+        const result = await friendsModel.friendGetList([payload.uuid, status])
 
         ctx.body = {
             code: 200,
@@ -46,9 +49,10 @@ router.get('/getList', async (ctx) => {
 
 // 搜索好友
 router.get('/searchFriends', async (ctx) => {
-    const { account, uuid } = ctx.query
+    const { account } = ctx.query
+    const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
 
-    if (isEmpty({ account, uuid })) {
+    if (isEmpty({ account })) {
         ctx.body = {
             code: 400,
             msg: '参数错误'
@@ -58,7 +62,7 @@ router.get('/searchFriends', async (ctx) => {
 
     const user = await exitUser(account)
 
-    if (user.length < 1) {
+    if (user.length < 1) { //不存在此用户
         ctx.body = {
             code: 200,
             msg: '搜索成功',
@@ -71,7 +75,7 @@ router.get('/searchFriends', async (ctx) => {
 
     // 判断搜索的用户是否和本人是好友
 
-    const userFriends = await isExitFriend(uuid, 1) // 本人的朋友列表
+    const userFriends = await isExitFriend(payload.uuid, 1) // 本人的朋友列表
 
     ctx.body = {
         code: 200,
@@ -88,11 +92,22 @@ router.get('/searchFriends', async (ctx) => {
 })
 // 添加好友
 router.post('/addFriends', async (ctx) => {
-    const { senderAccount, reciveAccount } = ctx.request.body
+    const { account } = ctx.request.body
+
+
+    if (isEmpty({ account })) {
+        ctx.body = {
+            code: 400,
+            msg: '参数错误'
+        }
+        return
+    }
+
+    const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
 
     try {
-        const senderUser = await exitUser(senderAccount); // 申请人信息 
-        const reciveUser = await exitUser(reciveAccount); // 接收人信息
+        const senderUser = await exitUser(payload.account); // 申请人信息 
+        const reciveUser = await exitUser(account); // 接收人信息
 
 
         const detail = await isExitFriend(reciveUser[0].uuid, 1) // 查询申请列表是否有申请人信息
@@ -106,9 +121,9 @@ router.post('/addFriends', async (ctx) => {
         }
 
         // 更新friends表 双向更新
-        await friendsModel.friendAddUser([senderAccount, senderUser[0].uuid, reciveAccount, reciveUser[0].uuid, reciveUser[0].avatar, reciveUser[0].username, 0])
+        await friendsModel.friendAddUser([payload.account, senderUser[0].uuid, account, reciveUser[0].uuid, reciveUser[0].avatar, reciveUser[0].username, 0])
 
-        await friendsModel.friendAddUser([reciveAccount, reciveUser[0].uuid, senderAccount, senderUser[0].uuid, senderUser[0].avatar, senderUser[0].username, 0])
+        await friendsModel.friendAddUser([account, reciveUser[0].uuid, payload.account, senderUser[0].uuid, senderUser[0].avatar, senderUser[0].username, 0])
 
         ctx.body = {
             code: 200,
@@ -170,17 +185,10 @@ router.get('/getFriendDetail', async (ctx) => {
 })
 // 获取我的好友申请列表
 router.get('/getApplyList', async (ctx) => {
-    const { uuid } = ctx.query;
+    const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
 
-    if (isEmpty({ uuid })) {
-        ctx.body = {
-            code: 400,
-            msg: '参数错误'
-        }
-        return
-    }
     try {
-        const userFriends = await friendsModel.friendList(uuid)
+        const userFriends = await friendsModel.friendList(payload.uuid)
         ctx.body = {
             code: 200,
             msg: '查询成功',
@@ -199,17 +207,20 @@ router.get('/getApplyList', async (ctx) => {
 })
 // 同意好友申请
 router.put('/agreeApply', async (ctx) => {
-    const { uuid, frienduuid } = ctx.request.body;
+    const { uuid } = ctx.request.body;
 
-    if (isEmpty({ uuid, frienduuid })) {
+    if (isEmpty({ uuid })) {
         ctx.body = {
             code: 400,
             msg: '参数错误'
         }
         return
     }
+
+    const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
+    
     try {
-        await friendsModel.agreeApply([uuid, frienduuid])
+        await friendsModel.agreeApply([payload.uuid, uuid])
         ctx.body = {
             code: 200,
             msg: '操作成功'

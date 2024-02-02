@@ -29,12 +29,20 @@ app.use(async (ctx, next) => {
     console.log(`${ctx.method} ${ctx.url} - ${rt}`);
 });
 
+
 // *******************JWT********************
+
+app.use(koaJwt({ secret: tokenConfig.jwtSecret }).unless({
+    path: tokenConfig.whilePath
+}))
 // Custom 401 handling if you don't want to expose koa-jwt errors to users
 app.use((ctx, next) => {
+    if (tokenConfig.whilePath.includes(ctx.url)) {
+        return next();
+    }
     if (ctx.header && ctx.header.authorization) {
         try {
-            const decoded = jwt.decode(ctx.header.authorization, tokenConfig.jwtSecret)
+            const decoded = jwt.decode(ctx.header.authorization.split(' ')[1], tokenConfig.jwtSecret)
             const timeStamp = Date.now()
             if (timeStamp > decoded.expires) {
                 ctx.body = {
@@ -64,10 +72,6 @@ app.use((ctx, next) => {
         }
     });
 });
-
-app.use(koaJwt({ secret: tokenConfig.jwtSecret }).unless({
-    path: tokenConfig.whilePath
-}))
 
 
 // *******************JWT********************
