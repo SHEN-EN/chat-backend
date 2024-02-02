@@ -6,7 +6,7 @@ const path = require('path')
 const bodyParser = require('koa-bodyparser')
 const koaJwt = require('koa-jwt')
 const tokenConfig = require('./config/token')
-const jwt = require('jwt-simple')
+const { verifyToken } = require('./util/index')
 
 const static = require('koa-static')
 
@@ -41,21 +41,21 @@ app.use((ctx, next) => {
         return next();
     }
     if (ctx.header && ctx.header.authorization) {
-        try {
-            const decoded = jwt.decode(ctx.header.authorization.split(' ')[1], tokenConfig.jwtSecret)
-            const timeStamp = Date.now()
-            if (timeStamp > decoded.expires) {
-                ctx.body = {
-                    code: 401,
-                    msg: `Token已过期`
-                }
-                return
+        const result = verifyToken(ctx.header.authorization.split(' ')[1], tokenConfig.jwtSecret)
+        
+        if (result == 'epired') {
+            ctx.body = {
+                code: 401,
+                msg: `Token已过期`
             }
-        } catch (error) {
+            return
+        }
+
+        if (result == 'error') {
             ctx.status = 401;
             ctx.body = {
                 code: 401,
-                msg: `非法Token${error}`
+                msg: `非法Token`
             }
             return
         }
