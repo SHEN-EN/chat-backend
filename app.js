@@ -7,6 +7,8 @@ const bodyParser = require('koa-bodyparser')
 const koaJwt = require('koa-jwt')
 const tokenConfig = require('./config/token')
 const { verifyToken } = require('./util/index')
+const crypto = require('./crypto/index')
+const cryptoRSA = new crypto()
 
 const static = require('koa-static')
 
@@ -35,14 +37,17 @@ app.use(async (ctx, next) => {
 app.use(koaJwt({ secret: tokenConfig.jwtSecret }).unless({
     path: tokenConfig.whilePath
 }))
-// Custom 401 handling if you don't want to expose koa-jwt errors to users
+// Custom 401 
 app.use((ctx, next) => {
+
+    ctx.set('x-PublicKey', `${Buffer.from(cryptoRSA.publicKey).toString('base64')}`)
+
     if (tokenConfig.whilePath.includes(ctx.url)) {
         return next();
     }
     if (ctx.header && ctx.header.authorization) {
         const result = verifyToken(ctx.header.authorization.split(' ')[1], tokenConfig.jwtSecret)
-        
+
         if (result == 'epired') {
             ctx.body = {
                 code: 401,

@@ -6,6 +6,8 @@ const { v4: uuidv4 } = require('uuid');
 const { isEmpty } = require('@/util/index')
 const { tokenExpiresTime, jwtSecret } = require('@/config/token')
 const jwt = require('jwt-simple')
+const crypto = require('@/crypto/index')
+const cryptoRSA = new crypto()
 
 router.prefix('/v1/users')
 router.post('/register', async (ctx) => {
@@ -75,8 +77,8 @@ router.post('/login', async (ctx) => {
         }
         return
     }
-
-    if (user[0].password === password) {
+    
+    if (cryptoRSA.decrypt(user[0].password) === cryptoRSA.decrypt(password)) {
         ctx.body = {
             code: 200,
             msg: '登录成功',
@@ -131,6 +133,13 @@ router.get('/getUserInfo', async (ctx) => {
         code: 200,
         msg: '查询成功',
         data: { ...data[0], uuid: payload.uuid }
+    }
+})
+router.get('/getPublicKey', async (ctx) => {
+    ctx.body = {
+        code: 200,
+        msg: '操作成功',
+        data: `${Buffer.from(cryptoRSA.publicKey).toString('base64')}`
     }
 })
 const exitUser = async (account) => await userModel.userLogin(account)

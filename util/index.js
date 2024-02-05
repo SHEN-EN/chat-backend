@@ -1,5 +1,4 @@
 const jwt = require('jwt-simple')
-
 const isEmpty = (obj) => {
     for (const key in obj) {
         if (!obj[key]) {
@@ -21,6 +20,7 @@ const verifyToken = (token, jwtSecret) => {
         return 'error'
     }
 }
+
 module.exports = {
     isEmpty,
     verifyToken
