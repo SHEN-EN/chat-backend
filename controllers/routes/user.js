@@ -77,7 +77,6 @@ router.post('/login', async (ctx) => {
         }
         return
     }
-    
     if (cryptoRSA.decrypt(user[0].password) === cryptoRSA.decrypt(password)) {
         ctx.body = {
             code: 200,

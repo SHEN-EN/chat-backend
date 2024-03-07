@@ -22,7 +22,7 @@ io.on("connection", (socket) => {
         const messsgae = {
             data,
             time: Date.now(),
-            senderId:payload.uuid,
+            senderId: payload.uuid,
             reciverId,
             username: user[payload.uuid].username,
         }
@@ -35,15 +35,16 @@ io.on("connection", (socket) => {
         socket.to(user[reciverId].id).emit('add-friends')
     })
     //同意好友申请
-    socket.on('agree-friend-apply', ({ reciverId }) => {
+    socket.on('agree-friend-apply', ({ reciverId, avatar }) => {
         const messsgae = {
             data: '',
             time: Date.now(),
-            senderId:payload.uuid,
+            senderId: payload.uuid,
             reciverId,
             username: user[payload.uuid].username,
+            avatar,
         }
-        socket.to(user[reciverId].id).emit('agree-friend-apply',messsgae)
+        socket.to(user[reciverId].id).emit('agree-friend-apply', messsgae)
     })
 });
 
