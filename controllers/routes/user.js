@@ -125,8 +125,12 @@ router.put('/editUserInfo', async (ctx) => {
 })
 
 router.get('/getUserInfo', async (ctx) => {
+
+    const { uuid } = ctx.query;
+
     const payload = jwt.decode(ctx.header.authorization.split(' ')[1], jwtSecret)
-    const data = await userModel.userGetInfo([payload.uuid]);
+
+    const data = await userModel.userGetInfo([uuid || payload.uuid]);
 
     ctx.body = {
         code: 200,
@@ -134,6 +138,7 @@ router.get('/getUserInfo', async (ctx) => {
         data: { ...data[0], uuid: payload.uuid }
     }
 })
+
 router.get('/getPublicKey', async (ctx) => {
     ctx.body = {
         code: 200,
