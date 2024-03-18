@@ -38,6 +38,7 @@ router.get("/getList", async (ctx) => {
                         uuid: item.frienduuid,
                         avatar: item.friendAvatar,
                         username: item.friendUsername,
+                        notes: item.notes
                     };
                 }) || [],
         };
@@ -169,25 +170,27 @@ router.post("/addFriends", async (ctx) => {
         logger.error("/addFriends ---", error);
     }
 });
-//获取好友备注
-router.get("/getFriendNotes", async (ctx) => {
-    const payload = jwt.decode(ctx.header.authorization.split(" ")[1], jwtSecret);
-    const { uuid } = ctx.query;
-    try {
-        const result = await friendsModel.friendNotes([payload.uuid, uuid]);
-        ctx.body = {
-            code: 200,
-            msg: "查询成功",
-            data: result[0].notes,
-        };
-    } catch (error) {
-        logger.error("/getFriendNotes ---", error);
-    }
-});
+
+
+
 // 修改好友备注
 router.put("/setFriendNotes", async (ctx) => {
     const payload = jwt.decode(ctx.header.authorization.split(" ")[1], jwtSecret);
     const { uuid, notes } = ctx.query;
+
+    if (
+        isEmpty({
+            uuid,
+            notes,
+        })
+    ) {
+        ctx.body = {
+            code: 400,
+            msg: "参数错误",
+        };
+        return;
+    }
+
     try {
         await friendsModel.updateFriendNotes([
             notes,
@@ -202,6 +205,7 @@ router.put("/setFriendNotes", async (ctx) => {
         logger.error("/setFriendNotes ---", error);
     }
 });
+
 // 获取我的好友申请列表
 router.get("/getApplyList", async (ctx) => {
     const payload = jwt.decode(ctx.header.authorization.split(" ")[1], jwtSecret);

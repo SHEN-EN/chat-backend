@@ -7,8 +7,8 @@ const bodyParser = require('koa-bodyparser')
 const koaJwt = require('koa-jwt')
 const tokenConfig = require('./config/token')
 const { verifyToken } = require('./util/index')
-const crypto = require('./crypto/index')
-const cryptoRSA = new crypto()
+const cryptoRSA = require('./crypto/index')
+// const cryptoRSA = new crypto()
 
 const static = require('koa-static')
 

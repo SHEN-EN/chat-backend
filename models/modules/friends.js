@@ -23,12 +23,9 @@ const clearApply = (params) => {
     const SQL = `update  tb_user_friends set isrecord = '0' where uuid=?`
     return query(SQL, params)
 }
-const friendNotes = (params) => {
-    const SQL = `select notes from tb_user_friends where uuid=? and frienduuid=?`
-    return query(SQL, params)
-}
 const updateFriendNotes = (params) => {
-    const SQL = `update  tb_user_friends set notes = ? where  uuid=? and frienduuid=?`
+    console.log(params);
+    const SQL = `update tb_user_friends set notes = ? where  uuid=? and frienduuid=?`
     return query(SQL, params)
 }
 module.exports = {
@@ -38,6 +35,5 @@ module.exports = {
     friendList,
     agreeApply,
     clearApply,
-    friendNotes,
     updateFriendNotes
 }

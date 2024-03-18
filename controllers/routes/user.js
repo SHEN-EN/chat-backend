@@ -6,8 +6,9 @@ const { v4: uuidv4 } = require('uuid');
 const { isEmpty } = require('@/util/index')
 const { tokenExpiresTime, jwtSecret } = require('@/config/token')
 const jwt = require('jwt-simple')
-const crypto = require('@/crypto/index')
-const cryptoRSA = new crypto()
+const cryptoRSA = require('@/crypto/index')
+// const cryptoRSA = new crypto()
+const friendsModel = require("@/models/modules/friends");
 
 router.prefix('/v1/users')
 router.post('/register', async (ctx) => {
@@ -77,7 +78,7 @@ router.post('/login', async (ctx) => {
         }
         return
     }
-    if (cryptoRSA.decrypt(user[0].password) === cryptoRSA.decrypt(password)) {
+    if (user[0].password === cryptoRSA.decrypt(password)) {
         ctx.body = {
             code: 200,
             msg: '登录成功',
@@ -132,10 +133,18 @@ router.get('/getUserInfo', async (ctx) => {
 
     const data = await userModel.userGetInfo([uuid || payload.uuid]);
 
+    let notes = ''
+
+    if (uuid) {
+        notes = (await friendsModel.friendGetList([payload.uuid, 1])).find(item => {
+            return item.frienduuid === uuid
+        }).notes;
+    }
+
     ctx.body = {
         code: 200,
         msg: '查询成功',
-        data: { ...data[0], uuid: payload.uuid }
+        data: { ...data[0], ... !uuid ? { uuid: payload.uuid } : { uuid }, ...uuid && { notes } }
     }
 })
 

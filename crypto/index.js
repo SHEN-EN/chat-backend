@@ -2,6 +2,7 @@ const NodeRSA = require('node-rsa');
 
 class cryptoRSA {
     constructor() {
+        if (this.key) return
         this.key = new NodeRSA({ b: 1024 });
         this.key.setOptions({ encryptionScheme: 'pkcs1' })
         this.publicKey = this.key.exportKey('pkcs8-public');
@@ -12,4 +13,4 @@ class cryptoRSA {
         return this.key.decrypt(data, 'utf8');
     }
 }
-module.exports = cryptoRSA
+module.exports = new cryptoRSA()
