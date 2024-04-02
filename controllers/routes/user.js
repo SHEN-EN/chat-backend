@@ -35,7 +35,7 @@ router.post('/register', async (ctx) => {
 
     try {
         const uuid = uuidv4();
-        await userModel.userRegistry([uuid, username, password, account, 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'])
+        await userModel.userRegistry([uuid, username, cryptoRSA.decrypt(password), account, 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'])
 
         ctx.body = {
             code: 200,
@@ -138,7 +138,7 @@ router.get('/getUserInfo', async (ctx) => {
     if (uuid) {
         notes = (await friendsModel.friendGetList([payload.uuid, 1])).find(item => {
             return item.frienduuid === uuid
-        }).notes;
+        })?.notes;
     }
 
     ctx.body = {

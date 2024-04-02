@@ -28,19 +28,11 @@ router.get("/getList", async (ctx) => {
 
     try {
         const result = await friendsModel.friendGetList([payload.uuid, status]);
+        delete result[0].password
         ctx.body = {
             code: 200,
             msg: "查询成功",
-            data:
-                result.map((item) => {
-                    return {
-                        account: item.friendAccount,
-                        uuid: item.frienduuid,
-                        avatar: item.friendAvatar,
-                        username: item.friendUsername,
-                        notes: item.notes
-                    };
-                }) || [],
+            data:result,
         };
     } catch (error) {
         ctx.body = {
@@ -138,23 +130,17 @@ router.post("/addFriends", async (ctx) => {
         await friendsModel.friendAddUser([
             payload.account,
             senderUser[0].uuid,
-            account,
             reciveUser[0].uuid,
-            reciveUser[0].avatar,
-            reciveUser[0].username,
             0,
-            payload.uuid,
+            1
         ]);
 
         await friendsModel.friendAddUser([
             account,
             reciveUser[0].uuid,
-            payload.account,
             senderUser[0].uuid,
-            senderUser[0].avatar,
-            senderUser[0].username,
             0,
-            payload.uuid,
+            0
         ]);
 
         ctx.body = {

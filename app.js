@@ -8,7 +8,6 @@ const koaJwt = require('koa-jwt')
 const tokenConfig = require('./config/token')
 const { verifyToken } = require('./util/index')
 const cryptoRSA = require('./crypto/index')
-// const cryptoRSA = new crypto()
 
 const static = require('koa-static')
 

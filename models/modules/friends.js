@@ -1,10 +1,14 @@
 const query = require('../sql')
 const friendGetList = params => {
-    const SQL = `select * from tb_user_friends where uuid = ? and isAgree=?`;
+    const SQL = `select u.*
+    from tb_user u
+    join tb_user_friends f ON u.uuid = f.uuid
+    where f.frienduuid = ?
+    and f.isAgree = ?`;
     return query(SQL, params)
 }
 const friendAddUser = (params) => {
-    const SQL = `insert into tb_user_friends(account,uuid,friendAccount,frienduuid,friendAvatar,friendUsername,isAgree,time,isrecord,applicantuuid) values(?,?,?,?,?,?,?,NOW(),1,?)`
+    const SQL = `insert into tb_user_friends(account,uuid,frienduuid,isAgree,time,isrecord,isapplyUser) values(?,?,?,?,NOW(),1,?)`
     return query(SQL, params)
 }
 const friendExists = (params) => {
