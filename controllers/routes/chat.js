@@ -19,6 +19,7 @@ io.on("connection", (socket) => {
             if (res.length > 0) {
                 for (const iterator of res) {
                     io.to(socket.id).emit('private-chat', JSON.parse(iterator))
+                    client.lPop(payload.uuid);
                 }
             }
         })
