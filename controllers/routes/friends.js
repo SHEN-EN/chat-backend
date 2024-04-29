@@ -28,11 +28,16 @@ router.get("/getList", async (ctx) => {
 
     try {
         const result = await friendsModel.friendGetList([payload.uuid, status]);
+
+        for (const iterator of result) {
+            const { notes } = (await friendsModel.friendGetNotes([iterator.uuid]))[0]
+            iterator.notes = notes;
+        }
         delete result[0].password
         ctx.body = {
             code: 200,
             msg: "查询成功",
-            data:result,
+            data: result,
         };
     } catch (error) {
         ctx.body = {

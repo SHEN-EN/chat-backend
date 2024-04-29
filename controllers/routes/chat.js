@@ -26,19 +26,22 @@ io.on("connection", (socket) => {
 
         user[payload.uuid] = {
             id: socket.id,
-            username
+            "username": username
         };
 
     });
-    socket.on("private-chat", ({ data, reciverId, avatar }) => {
-        
+    socket.on("private-chat", (privateMessage) => {
+
+        const { data, reciverId, avatar, messageType, fileInfo } = privateMessage;
         const messgae = {
             data,
             time: Date.now(),
             senderId: payload.uuid,
             reciverId,
             username: user[payload.uuid].username,
-            avatar
+            avatar,
+            messageType,
+            ...(messageType === 'file' ? { fileInfo } : {})
         }
 
         if (!user[reciverId]) { // 用户离线

@@ -7,6 +7,10 @@ const friendGetList = params => {
     and f.isAgree = ?`;
     return query(SQL, params)
 }
+const friendGetNotes = params => {
+    const SQL = `select notes from tb_user_friends where frienduuid = ?`
+    return query(SQL, params)
+}
 const friendAddUser = (params) => {
     const SQL = `insert into tb_user_friends(account,uuid,frienduuid,isAgree,time,isrecord,isapplyUser) values(?,?,?,?,NOW(),1,?)`
     return query(SQL, params)
@@ -39,5 +43,6 @@ module.exports = {
     friendList,
     agreeApply,
     clearApply,
-    updateFriendNotes
+    updateFriendNotes,
+    friendGetNotes
 }
